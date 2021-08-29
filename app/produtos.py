@@ -1,6 +1,7 @@
 import mariadb
 from connection import Connection
 
+
 class Produtos:
     def open(self):
         print('----------------------')
@@ -39,8 +40,17 @@ class Produtos:
         try:
             cur = Connection().getCur()
 
-            cur.execute(f'INSERT INTO produto (descricao) VALUES (?)', [(nomeProduto)])
+            cur.execute(f'INSERT INTO produto (descricao) VALUES (?)', (nomeProduto,))
 
             print('Produto inserido com sucesso!')
         except mariadb.Error as e:
             print(f'Problema ao realizar a operação: {e}')
+
+    def buscarProdutoPeloId(self, id):
+        cur = Connection().getCur()
+        cur.execute('SELECT * FROM produto WHERE idProduto = ?', (id,))
+        produto = {}
+        for (codigo, descricao) in cur:
+            produto['codigo'] = codigo
+            produto['descricao'] = descricao
+        return produto
