@@ -7,3 +7,16 @@ Este repositório se destina a armazenar os arquivos e atualizações de um sist
 Este sistema possui um sistema simples de produto -> recomendação no qual, ao finalizar a compra, verificará todas as recomendações inseridas no banco de dados e, para cada recomendação, se os produtos presentes no carrinho também estão presentes no carrinho. Após essa verificação, será feita a verificação de se o produto a ser recomendado também está presente no carrinho, caso não esteja, será recomendado e o usuário poderá adicioná-lo.
 
 O banco de dados utilizado nesta aplicação foi o MariaDB possuindo três tabelas, sendo elas a tabela de produto, produtoRecomendacao e recomendacao.
+
+## Como construir e executar o projeto (Windows/prompt de comando)
+
+1. Clonar o repositório
+2. Navegar para a pasta app e executar:
+3. Instalar as dependências:
+```
+pip install -r requirements.txt
+```
+4. Executar o comando:
+```
+python app.py
+```
