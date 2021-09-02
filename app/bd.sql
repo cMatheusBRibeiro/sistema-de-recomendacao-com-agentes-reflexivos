@@ -8,12 +8,18 @@ CREATE TABLE produto (
 
 CREATE TABLE recomendacao (
     idRecomendacao INT AUTO_INCREMENT PRIMARY KEY,
-    produtoAnalisado INT,
     produtoRecomendado INT,
-    FOREIGN KEY (produtoAnalisado)
-        REFERENCES produto (idProduto),
     FOREIGN KEY (produtoRecomendado)
         REFERENCES produto (idProduto)
+)ENGINE=INNODB;
+
+CREATE TABLE produtoRecomendacao(
+    idProduto INT,
+    idRecomendacao INT,
+    FOREIGN KEY (idProduto)
+        REFERENCES produto (idProduto),
+    FOREIGN KEY (idRecomendacao)
+        REFERENCES recomendacao (idRecomendacao)
 )ENGINE=INNODB;
 
 INSERT INTO produto (idProduto, descricao) VALUES 

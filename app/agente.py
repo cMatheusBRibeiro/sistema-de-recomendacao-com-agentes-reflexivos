@@ -6,14 +6,25 @@ class Agente:
     def analisarCompra(self, carrinho):
         cur = Connection().getCur()
         try:
-            cur.execute('SELECT pa.idProduto, pr.idProduto FROM produto pa, produto pr, recomendacao r '
-                        'WHERE r.produtoAnalisado = pa.idProduto AND r.produtoRecomendado = pr.idProduto')
+            cur.execute('SELECT * FROM recomendacao')
             produtosRecomendados = []
-            for analisado, recomendado in cur:
-                if self.verificarExistenciaProduto(carrinho, analisado) and not self.verificarExistenciaProduto(carrinho, recomendado):
-                    produtosRecomendados.append(recomendado)
+            recomendacoes = []
+            for recomendacao in cur:
+                recomendacoes.append(recomendacao)
+
+            for recomendacao in recomendacoes:
+                cur.execute('SELECT idProduto FROM produtorecomendacao WHERE idRecomendacao = (?)',
+                            (str(recomendacao[0]), ))
+                recomendar = True
+                for idProduto in cur:
+                    if not self.verificarExistenciaProduto(carrinho, idProduto[0]):
+                        recomendar = False
+
+                if recomendar and not self.verificarExistenciaProduto(carrinho, recomendacao[1]):
+                    produtosRecomendados.append(recomendacao[1])
 
             novasAdicoes = []
+            print(produtosRecomendados)
 
             if produtosRecomendados.__len__() > 0:
                 print('----------------------')

@@ -3,6 +3,7 @@ import mariadb
 from connection import Connection
 from produtos import Produtos
 
+
 class Recomendacoes:
     def open(self):
         print('----------------------')
@@ -30,35 +31,53 @@ class Recomendacoes:
     def buscarRecomendacoes(self):
         cur = Connection().getCur()
 
-        cur.execute('SELECT '
-                    '   r.idRecomendacao codigo, '
-                    '   pa.descricao analisado, '
-                    '   pr.descricao recomendado '
-                    'FROM'
-                    '   produto pa, '
-                    '   produto pr, '
-                    '   recomendacao r '
-                    'WHERE '
-                    '   r.produtoAnalisado = pa.idProduto AND '
-                    '   r.produtoRecomendado = pr.idProduto ')
+        cur.execute('SELECT * FROM recomendacao')
+        recomendacoesSQL = []
+        [recomendacoesSQL.append(recomendacao) for recomendacao in cur]
+        recomendacoes = []
+        for idRecomendacao, idProduto in recomendacoesSQL:
+            print(idRecomendacao, idProduto)
+            cur.execute(f'SELECT p.descricao produto FROM produto p, produtorecomendacao pr '
+                        f'WHERE pr.idRecomendacao = (?) AND pr.idProduto = p.idProduto', (idRecomendacao, ))
+            produtosAnalisados = []
+            for produto in cur:
+                produtosAnalisados.append(produto[0])
 
+            cur.execute(f'SELECT p.descricao produto FROM produto p WHERE p.idProduto = (?)',
+                        (idProduto, ))
+            produtoRecomendado = ''
+            for produto in cur:
+                produtoRecomendado = produto[0]
+
+            recomendacoes.append({
+                'codigo': idRecomendacao,
+                'produtos': produtosAnalisados,
+                'recomendacao': produtoRecomendado
+            })
+
+        print(recomendacoes)
         print('----------------------')
-        print('Código: Produto analisado -> Produto recomendado')
+        print('Código: Produtos -> Recomendacao')
         print('----------------------')
-        for codigo, analisado, recomendado in cur:
-            print(f'{codigo}: {analisado} -> {recomendado}')
+        for recomendacao in recomendacoes:
+            print(f'{recomendacao["codigo"]}: {", ".join(recomendacao["produtos"])} -> {recomendacao["recomendacao"]}')
+
         print('----------------------')
 
     def adicionarRecomendacao(self):
         Produtos().buscarProdutos()
-        produtoAnalisado = input('Informe o código do produto a ser analisado: ')
+        produtosAnalisado = input('Informe os códigos dos produtos a serem analisados (separado por espaço): ').split()
         produtoRecomendado = input('Informe o códuigo do produto a ser recomendado: ')
 
         cur = Connection().getCur()
 
         try:
-            cur.execute(f'INSERT INTO recomendacao (produtoAnalisado, produtoRecomendado) VALUES (?, ?)',
-                        (produtoAnalisado, produtoRecomendado))
+            cur.execute(f'INSERT INTO recomendacao (produtoRecomendado) VALUES (?)',
+                        (produtoRecomendado,))
+            idRecomendacao = cur.lastrowid
+            for produto in produtosAnalisado:
+                cur.execute(f'INSERT INTO produtorecomendacao (idRecomendacao, idProduto) VALUES (?, ?)',
+                            (idRecomendacao, produto))
         except mariadb.Error as e:
             print(f'Problema ao realizar a operação: {e}')
 
@@ -68,6 +87,7 @@ class Recomendacoes:
         cur = Connection().getCur()
 
         try:
+            cur.execute(f'DELETE FROM produtorecomendacao WHERE idRecomendacao = {codigo}')
             cur.execute(f'DELETE FROM recomendacao WHERE idRecomendacao = {codigo}')
             print('Recomendação excluída com sucesso!')
         except mariadb.Error as e:
