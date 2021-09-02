@@ -11,12 +11,12 @@ O banco de dados utilizado nesta aplicação foi o MariaDB possuindo três tabel
 ## Como construir e executar o projeto (Windows/prompt de comando)
 
 1. Clonar o repositório
-2. Navegar para a pasta app e executar:
-3. Instalar as dependências:
+2. Navegar para a pasta app
+3. Instalar as dependências
 ```
 pip install -r requirements.txt
 ```
-4. Executar o comando:
+4. Executar o seguinte comando:
 ```
 python app.py
 ```
