@@ -3,7 +3,7 @@ USE sistemarecomendacao;
 
 CREATE TABLE produto (
     idProduto INT AUTO_INCREMENT PRIMARY KEY,
-    descricao VARCHAR(20)
+    descricao VARCHAR(50)
 )ENGINE=INNODB;
 
 CREATE TABLE recomendacao (
@@ -22,14 +22,19 @@ CREATE TABLE produtoRecomendacao(
         REFERENCES recomendacao (idRecomendacao)
 )ENGINE=INNODB;
 
-INSERT INTO produto (idProduto, descricao) VALUES 
-    (1, 'Coxinha'),
-    (2, 'Kibe'),
-    (3, 'Coca Cola'),
-    (4, 'Guaranita'),
-    (5, 'Cerveja'),
-    (6, 'Vinho'),
-    (7, 'Queijo'),
-    (8, 'Torresmo'),
-    (9, 'Pastel'),
-    (10, 'Pão');
+CREATE TABLE transacao (
+    idTransacao INT PRIMARY KEY,
+    data DATETIME,
+    periodo_dia VARCHAR(20),
+    weekday_weekend VARCHAR(20)
+)ENGINE=INNODB;
+
+CREATE TABLE produtoTransacao (
+    idProdutoTransacao INT AUTO_INCREMENT PRIMARY KEY,
+    idProduto INT,
+    idTransacao INT,
+    FOREIGN KEY (idProduto)
+        REFERENCES produto (idProduto),
+    FOREIGN KEY (idTransacao)
+        REFERENCES transacao (idTransacao)
+)ENGINE=INNODB;
