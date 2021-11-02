@@ -37,12 +37,63 @@ def buscarQuantidadeDeVendasDosItens(titulo, periodo = None):
     fig.tight_layout()
     plt.show()
 
-def identificarAssociacoes():
-    cur.execute("SELECT idTransacao FROM transacao")
-    transacoes = []
-    [transacoes.append(transacao[0]) for transacao in cur]
-    produtosTransacao = []
+def support(Ix, Iy, transacoes):
+    sup = 0
     for transacao in transacoes:
+        if (Ix.union(Iy)).issubset(transacao):
+            sup += 1
+    sup = sup/len(transacoes)
+    return sup
+
+def confidence(Ix, Iy, transacoes):
+    Ix_count = 0
+    Ixy_count = 0
+    for transacao in transacoes:
+        if Ix.issubset(transacao):
+            Ix_count += 1
+            if (Ix.union(Iy)).issubset(transacao):
+                Ixy_count += 1
+    conf = Ixy_count / Ix_count
+    return conf
+
+def prune(ass_rules, min_sup, min_conf):
+    prune_ass_rules = []
+    for ar in ass_rules:
+        if ar['support'] >= min_sup and ar['confidence'] >= min_conf:
+            prune_ass_rules.append(ar)
+    return prune_ass_rules
+
+def apriori(produtos, transacoes, min_sup, min_conf):
+    ass_rules = []
+    ass_rules.append([])
+    for produto in produtos:
+        sup = support({produto}, {produto}, transacoes)
+        ass_rules[0].append({'rule': produto, \
+                             'support': sup, \
+                             'confidence': 1})
+    ass_rules[0] = prune(ass_rules[0], min_sup, min_conf)
+    ass_rules.append([])
+    for produto_1 in ass_rules[0]:
+        for produto_2 in ass_rules[0]:
+            if produto_1['rule'] != produto_2['rule']:
+                rule = str(produto_1['rule']) + '_' + str(produto_2['rule'])
+                Ix = {produto_1['rule']}
+                Iy = {produto_2['rule']}
+                sup = support(Ix, Iy, transacoes)
+                conf = confidence(Ix, Iy, transacoes)
+                ass_rules[1].append({'rule': rule, \
+                                     'support': sup, \
+                                     'confidence': conf})
+    ass_rules[1] = prune(ass_rules[1], min_sup, min_conf)
+    return ass_rules
+
+def identificarAssociacoes():
+    # Buscando transações
+    cur.execute("SELECT idTransacao FROM transacao")
+    transacoesBruto = []
+    [transacoesBruto.append(transacao[0]) for transacao in cur]
+    transacoes = []
+    for transacao in transacoesBruto:
         cur.execute("SELECT p.idProduto "
                     "FROM produto p, produtotransacao pt "
                     "WHERE p.idProduto = pt.idProduto AND pt.idTransacao = ?",
@@ -50,15 +101,33 @@ def identificarAssociacoes():
         produtos = []
         for produto in cur:
             produtos.append(produto[0])
-        produtosTransacao.append(produtos)
-        print(produtos)
+        transacoes.append(produtos)
 
-'''
-buscarQuantidadeDeItensExistentes()
-buscarQuantidadeDeVendasDosItens('Total de vendas por produto')
-buscarQuantidadeDeVendasDosItens('Total de vendas por produto no período da manhã', 'morning')
-buscarQuantidadeDeVendasDosItens('Total de vendas por produto no período da tarde', 'afternoon')
-buscarQuantidadeDeVendasDosItens('Total de vendas por produto no período da noite', 'evening')
-'''
+    # Buscando produtos
+    cur.execute("SELECT idProduto FROM produto")
+    produtos = []
+    [produtos.append(produto[0]) for produto in cur]
 
-identificarAssociacoes()
+    # Chamando apriori
+    return apriori(produtos, transacoes, 0.09, 0.15)
+
+def gerarRelatorio():
+    buscarQuantidadeDeVendasDosItens('Total de vendas por produto')
+
+def gerarRelatorioDaManha():
+    buscarQuantidadeDeVendasDosItens('Total de vendas por produto no período da manhã', 'morning')
+
+def gerarRelatorioDaTarde():
+    buscarQuantidadeDeVendasDosItens('Total de vendas por produto no período da tarde', 'afternoon')
+
+def gerarRelatorioDaNoite():
+    buscarQuantidadeDeVendasDosItens('Total de vendas por produto no período da noite', 'evening')
+
+def totalItensExistentes():
+    buscarQuantidadeDeItensExistentes()
+
+def atualizarRecomendacoes():
+    associacoes = identificarAssociacoes()
+    print(associacoes)
+
+atualizarRecomendacoes()
