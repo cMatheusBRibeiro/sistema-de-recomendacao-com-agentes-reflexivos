@@ -125,9 +125,3 @@ def gerarRelatorioDaNoite():
 
 def totalItensExistentes():
     buscarQuantidadeDeItensExistentes()
-
-def atualizarRecomendacoes():
-    associacoes = identificarAssociacoes()
-    print(associacoes)
-
-atualizarRecomendacoes()

@@ -2,6 +2,7 @@ import mariadb
 
 from connection import Connection
 from produtos import Produtos
+from analisarTransacoes import identificarAssociacoes
 
 
 class Recomendacoes:
@@ -15,6 +16,7 @@ class Recomendacoes:
             decision = input('1 - Buscar recomendacoes\n'
                              '2 - Adicionar recomendacao\n'
                              '3 - Excluir recomendacao\n'
+                             '4 - Gerar recomendacoes\n'
                              '0 - Sair\n')
             if decision == '0':
                 return
@@ -25,6 +27,8 @@ class Recomendacoes:
                     self.adicionarRecomendacao()
                 elif decision == '3':
                     self.excluirRecomendacao()
+                elif decision == '4':
+                    self.atualizarRecomendacoesAutomaticamente()
                 else:
                     print('Opção inválida.')
 
@@ -55,7 +59,6 @@ class Recomendacoes:
                 'recomendacao': produtoRecomendado
             })
 
-        print(recomendacoes)
         print('----------------------')
         print('Código: Produtos -> Recomendacao')
         print('----------------------')
@@ -92,3 +95,18 @@ class Recomendacoes:
             print('Recomendação excluída com sucesso!')
         except mariadb.Error as e:
             print(f'Problema ao realizar a operação: {e}')
+
+    def atualizarRecomendacoesAutomaticamente(self):
+        associacoesGeradas = identificarAssociacoes()
+        cur = Connection().getCur()
+        for associacao in associacoesGeradas[1]:
+            idProdutos = associacao['rule'].split('_')
+            try:
+                cur.execute(f'INSERT INTO recomendacao (produtoRecomendado) VALUES (?)',
+                            (idProdutos[0],))
+                idRecomendacao = cur.lastrowid
+                cur.execute(f'INSERT INTO produtorecomendacao (idRecomendacao, idProduto) VALUES (?, ?)',
+                            (idRecomendacao, idProdutos[1]))
+            except mariadb.Error as e:
+                print(f'Problema ao realizar a operação: {e}')
+        print('As novas recomendações foram geradas')
