@@ -23,7 +23,7 @@ CREATE TABLE produtoRecomendacao(
 )ENGINE=INNODB;
 
 CREATE TABLE transacao (
-    idTransacao INT PRIMARY KEY,
+    idTransacao INT AUTO_INCREMENT PRIMARY KEY,
     data DATETIME,
     periodo_dia VARCHAR(20),
     weekday_weekend VARCHAR(20)

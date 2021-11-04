@@ -1,5 +1,7 @@
 from produtos import Produtos
 from agente import Agente
+from datetime import datetime
+from connection import Connection
 
 class Carrinho:
     def __init__(self):
@@ -79,6 +81,9 @@ class Carrinho:
         novosProdutos = Agente().analisarCompra(self.produtos)
         for produto in novosProdutos:
             self.produtos.append(Produtos().buscarProdutoPeloId(produto))
+
+        self.adicionarTransacao()
+
         print('----------------------')
         print('Finalizando compra.')
         print('----------------------')
@@ -92,3 +97,13 @@ class Carrinho:
         print('Volte sempre :)')
         print('----------------------')
         print('----------------------')
+
+    def adicionarTransacao(self):
+        now = datetime.now()
+        cur = Connection().getCur()
+        cur.execute('INSERT INTO transacao (data, periodo_dia, weekday_weekend) VALUES (?, ?, ?)',
+                    (now, 'morning', 'weekend'))
+        idTransacao = cur.lastrowid
+        for produto in self.produtos:
+            cur.execute('INSERT INTO produtotransacao (idProduto, idTransacao) VALUES (?, ?)',
+                        (produto['codigo'], idTransacao))
