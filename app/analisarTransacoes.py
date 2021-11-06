@@ -149,7 +149,7 @@ def identificarAssociacoes():
     [produtos.append(produto[0]) for produto in cur]
 
     # Chamando apriori
-    return apriori(produtos, transacoes, 0.09, 0.15) # os parâmetros 0.09 e 0.15 são os valores mínimos de, respectivamente, suporte e confiança
+    return apriori(produtos, transacoes, 0.01, 0.01) # os parâmetros 0.09 e 0.15 são os valores mínimos de, respectivamente, suporte e confiança
 
 def gerarRelatorio():
     buscarQuantidadeDeVendasDosItens('Total de vendas por produto')
